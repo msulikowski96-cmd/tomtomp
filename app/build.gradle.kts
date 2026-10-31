@@ -19,7 +19,8 @@ android {
         versionName = "1.0"
 
         ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
+            // Pass -PphoneOnly to build a smaller APK for physical arm64 phones.
+            abiFilters += if (project.hasProperty("phoneOnly")) listOf("arm64-v8a") else listOf("arm64-v8a", "x86_64")
         }
 
         // Required by the SDK: choose the "complete" flavor (no private credentials needed).
@@ -29,6 +30,15 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            // Signed with the debug key so the APK can be sideloaded; use a real keystore for the Play Store.
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
 
     buildTypes.configureEach {
